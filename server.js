@@ -43,9 +43,18 @@ process.on('unhandledRejection', (err) => {
   console.log(err.name, err.message);
   console.log(err);
   // console.log(err); // optional
+
+  // server.close() allow all pending requests process until the end before closing the server
   server.close(() => {
-    // close the server, then exit the program
-    process.exit(1);
+    process.exit(1); // exit the program
+  });
+});
+
+// SIGTERM is a signal from Heroku that will shutdown the server every 24 hrs.
+process.on('SIGTERM', () => {
+  console.log('👋 SIGTERM RECEIVED. Shutting down gracefully...');
+  server.close(() => {
+    console.log('💥 Process terminated'); // no need for process.exit cuz SIGTERM will exit the program anyway
   });
 });
 

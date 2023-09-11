@@ -11,7 +11,7 @@ const signToken = (id) =>
     expiresIn: process.env.JWT_EXPIRES_IN,
   });
 
-const creatSendToken = (user, statusCode, res) => {
+const creatSendToken = (user, statusCode, req, res) => {
   const token = signToken(user._id);
   const cookieOptions = {
     expires: new Date(
@@ -19,8 +19,15 @@ const creatSendToken = (user, statusCode, res) => {
     ), // day to millisecond
     httpOnly: true,
   };
+
+  // In development
   if (process.env.NODE_ENV === 'production') {
-    cookieOptions.secure = true; // always set to be true, but need to test with postman first
+    cookieOptions.secure = true; // always set to be true, but need to test with postman in dev mode
+  }
+  // In production, use different variables
+  // req.headers['x-forwarded-photo'] expecially for Heroku
+  else if (req.secure || req.headers['x-forwarded-proto'] === 'https') {
+    cookieOptions.secure = true;
   }
 
   res.cookie('jwt', token, cookieOptions); // send token as cookie (prevents xss attack)
@@ -54,7 +61,7 @@ exports.signup = catchAsync(async (req, res, next) => {
   // console.log(url);
   await new Email(newUser, url).sendWelcome();
 
-  creatSendToken(newUser, 201, res);
+  creatSendToken(newUser, 201, req, res);
 });
 
 // No need to catchAsync to alert the error, in case if there is no token, use try catch
@@ -73,7 +80,7 @@ exports.login = catchAsync(async (req, res, next) => {
   }
 
   // 3) If everything is ok, send token to the client
-  creatSendToken(user, 200, res);
+  creatSendToken(user, 200, req, res);
 });
 
 // send fake content cookie to modify real cookie instead of delete it
@@ -246,7 +253,7 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
 
   // 3) Update changedPasswordAt property for the user using method in userModel
   // 4) Log the user in, send JWT
-  creatSendToken(user, 200, res);
+  creatSendToken(user, 200, req, res);
 });
 
 exports.updatePassword = catchAsync(async (req, res, next) => {
@@ -264,5 +271,5 @@ exports.updatePassword = catchAsync(async (req, res, next) => {
   await user.save();
 
   // 4) Log user in, send JWT
-  creatSendToken(user, 200, res);
+  creatSendToken(user, 200, req, res);
 });
