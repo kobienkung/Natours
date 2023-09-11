@@ -1,13 +1,15 @@
 const path = require('path');
 const express = require('express');
-const morgan = require('morgan');
+const morgan = require('morgan'); // gives log in the termianl
+// security stuff
 const rateLimit = require('express-rate-limit');
 const helmet = require('helmet');
 const mongoSanitize = require('express-mongo-sanitize');
 const xssClean = require('xss-clean');
 const hpp = require('hpp');
 const cookieParser = require('cookie-parser'); // read cookie
-const compression = require('compression');
+const compression = require('compression'); // compress files for the deployment
+const cors = require('cors'); // make api available across other domains
 
 const tourRouter = require('./routes/tourRoutes');
 const userRouter = require('./routes/userRoutes');
@@ -26,6 +28,19 @@ app.set('view engine', 'pug');
 app.set('views', path.join(__dirname, 'views'));
 
 // 1) GLOBAL MIDDLEWARES
+// Implement CORS
+// Set req.header; 'Access-Control-Allow-Origin' = '*'  !can be put before a specific route to give access
+app.use(cors());
+// In case have different domain for frontend and want to give api access, or other some specific webs
+// app.use(
+//   cors({
+//     origin: 'http://www.natours.com',
+//   }),
+// );
+
+app.options('*', cors()); // allow all routes to perform non simple requests everything but .get request
+// app.options('/api/v1/tours/:id', cors()); // e.g. if want to perform only a specific route
+
 // Serving static files
 app.use(express.static(path.join(__dirname, 'public'))); // give access to the local files
 
@@ -104,6 +119,7 @@ app.use((req, res, next) => {
 // 3) ROUTES
 app.use('/', viewRouter);
 app.use('/api/v1/tours', tourRouter);
+// app.use('/api/v1/tours', cors(), tourRouter); // remove app.use and allow only this route
 app.use('/api/v1/users', userRouter);
 app.use('/api/v1/reviews', reviewRouter);
 app.use('/api/v1/bookings', bookingRouter);
