@@ -16,6 +16,7 @@ const userRouter = require('./routes/userRoutes');
 const viewRouter = require('./routes/viewRoutes');
 const reviewRouter = require('./routes/reviewRoutes');
 const bookingRouter = require('./routes/bookingRoutes');
+const bookingController = require('./controllers/bookingController');
 const AppError = require('./utils/appError');
 const globalErrorHandler = require('./controllers/errorController');
 
@@ -59,6 +60,13 @@ const limiter = rateLimit({
   message: 'Too many requests for this IP. Please try again in an hour!',
 });
 app.use('/api', limiter); // if the app restarts, it will count from 0 again
+
+app.post(
+  '/webhook-checkout', // route created in Stripe with 'checkout.session.completed'
+  express.raw({ type: 'application/json' }),
+  bookingController.webhookCheckout,
+);
+// need raw data, implement here before body parser(express.json()) convert raw data to json format
 
 // Body parser, reading data from body to req.body
 app.use(express.json({ limit: '10kb' })); // middle ware for modifying incoming request data e.g., make req.body
