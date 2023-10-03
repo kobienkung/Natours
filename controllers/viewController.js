@@ -23,6 +23,7 @@ exports.getOverview = catchAsync(async (req, res, next) => {
     title: 'All tours',
     tours,
   }); // will look in __direname + views
+  // Can't use tourController cuz res.status(200).render() not res.status(200).json()
 });
 
 exports.getTour = catchAsync(async (req, res, next) => {

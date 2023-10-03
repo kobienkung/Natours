@@ -21,7 +21,7 @@ exports.getCheckoutSession = catchAsync(async (req, res, next) => {
     customer_email: req.user.email,
     client_reference_id: req.params.tourId,
     line_items: [
-      // about purchased item: field names are from Stripe
+      // about purchased item: field's name is from Stripe
       {
         quantity: 1,
         price_data: {
@@ -34,7 +34,8 @@ exports.getCheckoutSession = catchAsync(async (req, res, next) => {
               `${req.protocol}://${req.get('host')}/img/tours/${
                 tour.imageCover
               }`,
-            ], // need to exist in web
+              // img need to exist in web
+            ],
           },
         },
       },
@@ -83,6 +84,23 @@ exports.webhookCheckout = async (req, res, next) => {
   if (event.type === 'checkout.session.completed') {
     createBookingCheckout(event.data.object);
   }
+
+  // // Handle the event
+  // switch (event.type) {
+  //   case 'checkout.session.completed':
+  //     createBookingCheckout(event.data.object);
+  //     break;
+  //   case 'checkout.session.expired':
+  //     // res.redirect(`/{event.data.object.client_reference_id}`);
+  //     break;
+  //   case 'checkout.session.async_payment_failed':
+  //     break;
+  //   case 'checkout.session.async_payment_succeeded':
+  //     break;
+  //   // ... handle other event types
+  //   default:
+  //     console.log(`Unhandled event type ${event.type}`);
+  // }
 
   res.status(200).json({ received: true });
 };

@@ -9,8 +9,8 @@ const reviewSchema = new mongoose.Schema(
     },
     rating: {
       type: Number,
-      min: [1, 'Rating must be in range between 1 and 5'],
-      max: [5, 'Rating must be in range between 1 and 5'],
+      min: [1, 'Rating must be in range 1 to 5'],
+      max: [5, 'Rating must be in range 1 to 5'],
     },
     createdAt: {
       type: Date,
@@ -49,7 +49,7 @@ reviewSchema.pre(/^find/, function (next) {
   next();
 });
 
-// .statics are the function defined on the Model. .methods are the function defined on the document
+// .statics are the function defined on the Model but .methods are the function defined on the document
 reviewSchema.statics.calcAverageRatings = async function (tourId) {
   const states = await this.aggregate([
     // .this of static method always point to declared model(Review)
@@ -80,7 +80,7 @@ reviewSchema.statics.calcAverageRatings = async function (tourId) {
 };
 
 reviewSchema.post(/save|^findOneAnd/, (doc) => {
-  if (doc) Review.calcAverageRatings(doc.tour); // modified lecture169
+  if (doc) Review.calcAverageRatings(doc.tour); // modified(lecture169)
   // await doc.constructor.calcAverageRatings(doc.tour);
 });
 

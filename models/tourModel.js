@@ -1,7 +1,6 @@
 const mongoose = require('mongoose');
 const slugify = require('slugify');
 const validator = require('validator'); // from github
-// const User = require('./userModel');
 
 // Create a schema
 const tourSchema = new mongoose.Schema(
@@ -133,7 +132,7 @@ tourSchema.index({ startLocation: '2dsphere' }); // earth coordinates
 
 tourSchema.virtual('durationWeeks').get(function () {
   // not using arrow function cuz it has no access to this.object
-  // virtual property that is created each time of the query and can not really in DB so can't use query like Tour.find()
+  // virtual property that is created each time of the query and not really in DB so can't use query like Tour.find()
   return this.duration / 7;
 });
 
@@ -141,10 +140,11 @@ tourSchema.virtual('durationWeeks').get(function () {
 tourSchema.virtual('reviews', {
   ref: 'Review',
   foreignField: 'tour', // the field that the child ref of this doc
-  localField: '_id', // the field that matchs the child ref
+  localField: '_id', // the field that matches the child ref
 });
 
 // DOCUMENT MIDDLEWARE: runs before .save() and .create()
+// To implement if it's a patch update
 tourSchema.pre('save', function (next) {
   this.slug = slugify(this.name, { lower: true }); // add text to the url, this. is pointing to the document
   next();
@@ -171,7 +171,6 @@ tourSchema.pre('save', function (next) {
 // QUERY MIDDLEWARE
 tourSchema.pre(/^find/, function (next) {
   // /^find/ == regex that hook every command begins with 'find'
-  // tourSchema.pre('find', function (next) {
   // this middleware will hook find() function and do the following actions
   // this. is pointing at the query
   this.find({ secretTour: { $ne: true } });
@@ -181,7 +180,7 @@ tourSchema.pre(/^find/, function (next) {
 
 tourSchema.pre(/^find/, function (next) {
   this.populate({
-    path: 'guides', // populate() = fill up; populate() is another query then affect the performance
+    path: 'guides', // populate() = fill up; and it is another query that affect the performance
     select: '-__v -passwordChangedAt', // unselect some fields
   });
   next();

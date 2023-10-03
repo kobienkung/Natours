@@ -22,7 +22,7 @@ const multerStorage = multer.memoryStorage(); // just save in memory as buffer
 const multerFilter = (req, file, cb) => {
   // check if the file is image
   if (file.mimetype.startsWith('image')) {
-    cb(null, true);
+    cb(null, true); // cb = callback function (err, data)
   } else {
     cb(new AppError('Not an image! Please upload only images', 400), false);
   }
@@ -44,7 +44,7 @@ exports.resizeUserPhoto = catchAsync(async (req, res, next) => {
   await sharp(req.file.buffer)
     .resize(500, 500, { withoutEnlargement: true }) // not resize if img < 500x500
     .toFormat('jpeg')
-    .jpeg({ quality: 90 })
+    .jpeg({ quality: 90 }) // should be limited by letting user crop the photo
     .toFile(`public/img/users/${req.file.filename}`); // find a way to clean the old files !no need to await the deletion
 
   next();
@@ -110,7 +110,7 @@ exports.deleteMe = catchAsync(async (req, res, next) => {
 exports.createUser = (req, res) => {
   res.status(500).json({
     status: 'error',
-    message: 'This route is not defined. Please use /signup instead.',
+    message: 'This route is not defined! Please use /signup instead',
   });
 };
 

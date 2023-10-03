@@ -48,7 +48,7 @@ const creatSendToken = (user, statusCode, req, res) => {
 
 exports.signup = catchAsync(async (req, res, next) => {
   const newUser = await User.create({
-    // specify the except fields, otherwise unwanted access can be put by users e.g., admin
+    // specify the except fields, otherwise unwanted access can be put by users e.g., {role: admin}
     name: req.body.name,
     email: req.body.email,
     password: req.body.password,
@@ -64,7 +64,6 @@ exports.signup = catchAsync(async (req, res, next) => {
   creatSendToken(newUser, 201, req, res);
 });
 
-// No need to catchAsync to alert the error, in case if there is no token, use try catch
 exports.login = catchAsync(async (req, res, next) => {
   const { email, password } = req.body; // const email = req.body.email
 
@@ -93,8 +92,8 @@ exports.logout = (req, res) => {
   // res.cookie('jwt', 'loggedout', cookieOptions);
 
   res.status(200).json({ status: 'success' });
-  console.log(res.data.status);
-  console.log(res.data);
+  // console.log(res.data.status);
+  // console.log(res.data);
 };
 
 exports.protect = catchAsync(async (req, res, next) => {
@@ -105,6 +104,7 @@ exports.protect = catchAsync(async (req, res, next) => {
   if (req.cookies.jwt) {
     token = req.cookies.jwt;
   } else if (cookie) {
+    // 'token1=akdje; token2=vieke; token3=ekclw;'
     const value = `; ${cookie}`;
     const parts = value.split(`; ${wantedCookieName}=`);
     if (parts.length === 2) {
@@ -128,7 +128,7 @@ exports.protect = catchAsync(async (req, res, next) => {
   if (!currentUser) {
     return next(
       new AppError(
-        'The user beloging to this token does no longer exist.',
+        'The user belonging to this token does no longer exist.',
         401,
       ),
     );
@@ -143,12 +143,12 @@ exports.protect = catchAsync(async (req, res, next) => {
 
   // Grant access to protected route
   req.user = currentUser;
-  res.locals.user = currentUser; // make available to http templates
+  res.locals.user = currentUser; // make available to pug http templates
   next();
 });
 
-// Only for rendering page: user pictur if user logged in, no error
-exports.isLoggedIn = catchAsync(async (req, res, next) => {
+// Only for rendering page: user picture if user logged in, no need error from catchAsync
+exports.isLoggedIn = async (req, res, next) => {
   if (req.cookies.jwt) {
     try {
       // 1) Verify token
@@ -176,7 +176,7 @@ exports.isLoggedIn = catchAsync(async (req, res, next) => {
     }
   }
   next();
-});
+};
 
 // check role permissions befor next middleware
 exports.restrictTo =

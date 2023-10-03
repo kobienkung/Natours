@@ -50,7 +50,7 @@ process.on('unhandledRejection', (err) => {
   });
 });
 
-// SIGTERM is a ignal from Heroku that will shutdown the server every 24 hrs.
+// SIGTERM is a signal from Heroku that will shutdown the server every 24 hrs.
 process.on('SIGTERM', () => {
   console.log('👋 SIGTERM RECEIVED. Shutting down gracefully...');
   server.close(() => {

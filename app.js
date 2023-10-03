@@ -1,12 +1,14 @@
 const path = require('path');
 const express = require('express');
 const morgan = require('morgan'); // gives log in the termianl
-// security stuff
+
+// Security stuffs
 const rateLimit = require('express-rate-limit');
 const helmet = require('helmet');
 const mongoSanitize = require('express-mongo-sanitize');
 const xssClean = require('xss-clean');
 const hpp = require('hpp');
+
 const cookieParser = require('cookie-parser'); // read cookie
 const compression = require('compression'); // compress files for the deployment
 const cors = require('cors'); // make api available across other domains
@@ -32,30 +34,75 @@ app.set('views', path.join(__dirname, 'views'));
 // Implement CORS
 // Set req.header; 'Access-Control-Allow-Origin' = '*'  !can be put before a specific route to give access
 app.use(cors());
-// In case have different domain for frontend and want to give api access, or other some specific webs
-// app.use(
-//   cors({
-//     origin: 'http://www.natours.com',
-//   }),
-// );
+// In case have different domain for frontend and want to give api access, or other some specific webs >> app.use(cors({origin: 'http://www.natours.com'}));
 
-app.options('*', cors()); // allow all routes to perform non simple requests everything but .get request
+app.options('*', cors()); // allow all routes to perform non simple requests everything other than .get request
 // app.options('/api/v1/tours/:id', cors()); // e.g. if want to perform only a specific route
 
 // Serving static files
 app.use(express.static(path.join(__dirname, 'public'))); // give access to the local files
 
-// Set security HTTP headers
-app.use(helmet());
+// Set security HTTP headers & Fix CSP
+app.use(
+  helmet({
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'", 'data:', 'blob:', 'https:', 'ws:'],
+        baseUri: ["'self'"],
+        fontSrc: ["'self'", 'https:', 'data:'],
+        scriptSrc: [
+          "'self'",
+          'https:',
+          'http:',
+          'blob:',
+          'https://*.mapbox.com',
+          'https://js.stripe.com',
+          'https://m.stripe.network',
+          'https://*.cloudflare.com',
+        ],
+        frameSrc: ["'self'", 'https://js.stripe.com'],
+        objectSrc: ["'none'"],
+        styleSrc: ["'self'", 'https:', "'unsafe-inline'"],
+        workerSrc: [
+          "'self'",
+          'data:',
+          'blob:',
+          'https://*.tiles.mapbox.com',
+          'https://api.mapbox.com',
+          'https://events.mapbox.com',
+          'https://m.stripe.network',
+        ],
+        childSrc: ["'self'", 'blob:'],
+        imgSrc: ["'self'", 'data:', 'blob:'],
+        formAction: ["'self'"],
+        connectSrc: [
+          "'self'",
+          "'unsafe-inline'",
+          'data:',
+          'blob:',
+          'https://*.stripe.com',
+          'https://*.mapbox.com',
+          'https://*.cloudflare.com/',
+          'https://bundle.js:*',
+          'ws://127.0.0.1:*/',
+        ],
+        upgradeInsecureRequests: [],
+        // reportTo: ['foo'], // need to configure
+        // reportUri: 'https://mydomain.com/report',
+      },
+      // reportOnly: true,
+    },
+  }),
+);
 
 // Development logging
 if (process.env.NODE_ENV === 'development') {
   app.use(morgan('dev')); // give log in the termianl like "GET /api/v1/tours?duration=5&diffuculty=easy 200 3978.945 ms - 9387"
 }
 
-// Allow 100 requests per IP in 1 hr. To protect brute force
+// Allow 30 requests per IP in 1 hr. To protect brute force
 const limiter = rateLimit({
-  max: 100,
+  max: 30,
   windowsMs: 60 * 60 * 1000, // 1 hr. in ms
   message: 'Too many requests for this IP. Please try again in an hour!',
 });
@@ -96,20 +143,28 @@ app.use(
 
 app.use(compression()); // compress all text sent to client
 
+// CSP report
 app.use((req, res, next) => {
   res.setHeader(
     'Report-To',
-    `{"group":"csp-endpoint","max_age":10886400,"endpoints":[{"url":"${
-      req.protocol
-    }://${req.get('host')}:5500/__cspreport__"}],"include_subdomains":true}`,
-  ); // about to CSP report, also need to set 'Content-Security-Policy' & route
+    JSON.stringify({
+      group: 'csp-endpoint',
+      max_age: 10886400,
+      endpoints: [
+        { url: `${req.protocol}://${req.get('host')}/__cspreport__` },
+      ],
+      include_subdomains: true,
+    }), // about CSP report, also need to set 'Content-Security-Policy' & route
+  );
   res.setHeader(
     'Content-Security-Policy',
-    // "script-src 'self' https://js.stripe.com",
-    "default-src 'self' https://*.mapbox.com https://js.stripe.com/v3/;base-uri 'self';block-all-mixed-content;font-src 'self' https: data:;frame-ancestors 'self';img-src 'self' data:;object-src 'none';script-src https://js.stripe.com/v3/ https://cdnjs.cloudflare.com https://api.mapbox.com 'self' blob: ;script-src-attr 'none';style-src 'self' https: 'unsafe-inline';upgrade-insecure-requests;report-to csp-endpoint; report-uri /__cspreport__;",
+    'report-to csp-endpoint; report-uri /__cspreport__;',
   );
-
   next();
+  // res.setHeader(
+  //   'Content-Security-Policy',
+  //   "default-src 'self' https://*.mapbox.com https://js.stripe.com/v3/;base-uri 'self';block-all-mixed-content;font-src 'self' https: data:;frame-ancestors 'self';img-src 'self' data:;object-src 'none';script-src https://js.stripe.com/v3/ https://cdnjs.cloudflare.com https://api.mapbox.com 'self' blob: ;script-src-attr 'none';style-src 'self' https: 'unsafe-inline';upgrade-insecure-requests;report-to csp-endpoint; report-uri /__cspreport__;",
+  // );
 });
 
 app.post('/__cspreport__', (req, res, next) => {
@@ -126,7 +181,7 @@ app.use((req, res, next) => {
 
 // 3) ROUTES
 app.use('/', viewRouter);
-app.use('/api/v1/tours', tourRouter);
+app.use('/api/v1/tours', tourRouter); // v1 should be an variable, so can easily change app version
 // app.use('/api/v1/tours', cors(), tourRouter); // remove app.use and allow only this route
 app.use('/api/v1/users', userRouter);
 app.use('/api/v1/reviews', reviewRouter);

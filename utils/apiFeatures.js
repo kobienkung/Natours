@@ -11,7 +11,7 @@ class APIFeatures {
     excludedFields.forEach((el) => delete queryObj[el]);
 
     // 1B) grater/less than equal opertions
-    // duration: { gte: '5' } in url >>to be>> duration: { $gte: '5' } for MongoDB
+    // duration: { gte: '5' } in url >> duration: { $gte: '5' } for MongoDB
     let queryStr = JSON.stringify(queryObj);
     queryStr = queryStr.replace(/\b(gte|gt|lte|lt)\b/g, (match) => `$${match}`);
     // RE /b for matching the whole word, g for doing the fucntion entirely

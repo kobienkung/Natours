@@ -83,7 +83,7 @@ if (bookBtn) {
   bookBtn.addEventListener('click', (e) => {
     e.target.textContent = 'Processing...';
     const tourId = e.target.dataset.tourId; // from (data-tour-id=`${tour.id}`)
-    console.log(tourId);
+    // console.log(tourId);
     bookTour(tourId);
   });
 }

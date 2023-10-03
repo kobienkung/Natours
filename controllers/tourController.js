@@ -34,11 +34,11 @@ exports.resizeTourImages = catchAsync(async (req, res, next) => {
   if (!req.files.imageCover || !req.files.images) next();
 
   // 1) Cover image
-  req.body.imageCover = `tour-${req.params.id}-${Date.now()}.jpeg`; // set var to use update tour
+  req.body.imageCover = `tour-${req.params.id}-${Date.now()}.jpeg`; // set var to use for update the tour
   await sharp(req.files.imageCover[0].buffer)
-    .resize(2000, 1333, { withoutEnlargement: true }) // not resize if img < 500x500
+    .resize(2000, 1333, { withoutEnlargement: true }) // not resize if img < 2000x1333
     .toFormat('jpeg')
-    .jpeg({ quality: 90 })
+    .jpeg({ quality: 90 }) // reduce quality to 90%. Should let the user crop the image
     .toFile(`public/img/tours/${req.body.imageCover}`);
 
   // 2) Images
@@ -69,29 +69,15 @@ exports.aliasTopTours = (req, res, next) => {
 };
 
 exports.getAllTours = factory.getAll(Tour);
-
 // console.log(req.params);
 // const id = req.params.id * 1;
 // const tour = tours.find((el) => el.id === id);
 // const tour = await Tour.findById(req.params.id).populate('reviews'); // pass the name of virtual propperty to populate
 // work as the same as Tour.findOne({ _id: req.params.id });
-exports.getTour = factory.getOne(Tour, { path: 'reviews' });
+exports.getTour = factory.getOne(Tour, { path: 'reviews' }); // pass the name of virtual propperty to populate
 exports.createTour = factory.createOne(Tour);
 exports.updateTour = factory.updateOne(Tour);
 exports.deleteTour = factory.deleteOne(Tour);
-// exports.deleteTour = catchAsync(async (req, res, next) => {
-//   const tour = await Tour.findByIdAndDelete(req.params.id); // no variable assigned cuz no data to send back
-
-//   if (!tour) {
-//     return next(new AppError('No tour found with that ID', 404));
-//   }
-
-//   res.status(204).json({
-//     // 204: no content
-//     status: 'success',
-//     data: null,
-//   });
-// });
 
 exports.getTourStats = catchAsync(async (req, res, next) => {
   const stats = await Tour.aggregate([
@@ -144,7 +130,7 @@ exports.getMonthlyPlan = catchAsync(async (req, res, next) => {
       },
     },
     {
-      $addFields: { month: '$_id' },
+      $addFields: { month: '$_id' }, // add field(named 'month')
     },
     {
       $project: {
@@ -174,12 +160,12 @@ exports.getToursWithin = catchAsync(async (req, res, next) => {
   if (!lat || !lng)
     return next(
       new Error(
-        'Please provide a latitude and longitude in the format lat,lng',
+        'Please provide a latitude and longitude in the format, respectively',
         400,
       ),
     );
 
-  const radius = unit === 'mi' ? distance / 3963.2 : distance / 6378.1; // radian: div by earth's radius
+  const radius = unit === 'mi' ? distance / 3963.2 : distance / 6378.1; // radian = distance(mi/km) div by earth's radius
 
   const tours = await Tour.find({
     startLocation: { $geoWithin: { $centerSphere: [[lng, lat], radius] } }, // also 2dsphere index required
@@ -214,7 +200,7 @@ exports.getTourDistances = catchAsync(async (req, res, next) => {
     {
       $geoNear: {
         near: {
-          tyep: 'Point',
+          type: 'Point',
           coordinates: [lng * 1, lat * 1],
         }, // also 2dsphere index required
         distanceField: 'distance', // name the field
@@ -240,10 +226,6 @@ exports.getTourDistances = catchAsync(async (req, res, next) => {
 });
 
 // no longer needed
-// const fs = require('fs');
-// const tours = JSON.parse(
-//   fs.readFileSync(`${__dirname}/../dev-data/data/tours-simple.json`),
-// );
 
 // exports.checkID = (req, res, next, val) => {
 //   console.log(`This id is: ${val}`);
@@ -260,7 +242,7 @@ exports.getTourDistances = catchAsync(async (req, res, next) => {
 // exports.checkBody = (req, res, next) => {
 //   if (!req.body.name || !req.body.price) {
 //     return res.status(404).json({
-//       status: 'fial',
+//       status: 'fail',
 //       messege: 'Missing name or price',
 //     });
 //   }
