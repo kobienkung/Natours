@@ -1,0 +1,44 @@
+Natours
+A medium-sized tour booking project build on top of NodeJS
+
+Key Features
+- Authentication and Authorization
+  - Login, logout and sign-up(via API) features
+  - Password reset with 10-min lifetime token sent to the email
+  - Access restriction for some pages to only specified user's type
+  - Secret tour feature that will not be shown on a regular page or query
+  - User's existance recheck before entering some pages
+- User profile
+  - User CRUD
+  - Username, email and photo updation
+  - User's role variation (user, guide, lead-guide, admin)
+- Tour
+  - Tour CRUD
+  - Tour query (filter, limit, sort, fields, page)
+  - With geospatial data type of tour locations
+  - Map of the tour's visited spot
+  - Tour geospatial searching within a specified center and radius
+  - Tour stats (avgRating, avgPrice, minPrice, maxPrice grouped by difficulty)
+- Booking
+  - Booking CRUD without payment (restrict to admin and lead-guide)
+  - Creat a booking by complete the Strip payment for regular users
+- Review
+  - Review CRUD
+  - Restriction of 1 user for 1 tour review
+  - Tour's ratingsQuantity and ratingsQuantity are updated after the review is modified
+- Security
+  - 30 requests allowed per IP in 1 hr.
+  - Maxmium limit of 10kb incoming request
+  - Maxmium limit of 5MB uploading file size
+  - Data sanitization against NoSQL query injection
+  - Data sanitization against XSS
+  - Prevention of HTTP parameter polution
+- Error handler
+  - Json message for the API
+  - HTML render for the website
+  - Aware error / generic message on production
+  - Full error message on developmet
+- Email
+  - Customable email sending module
+  - Pre-made email templates
+  - Auto sender service switching on production(SendGrid) / development(Mailtrap)  
