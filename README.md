@@ -1,7 +1,14 @@
-Natours
-A medium-sized tour booking project build on top of NodeJS
+<h1 align="center">
+  <br>
+  <a href="https://lakshman-natours.herokuapp.com/"><img src="https://github.com/kobienkung/Natours/assets/59368603/93e8c119-bbf9-49a4-89a4-d09d24547122" alt="Natours" width="200"></a>
+  <br>
+  Natours
+  <br>
+</h1>
 
-Key Features
+<h4 align="center">A medium-sized tour booking project build on top of NodeJS</h4>
+
+## Key Features 📝
 - Authentication and Authorization
   - Login, logout and sign-up(via API) features
   - Password reset with 10-min lifetime token sent to the email
@@ -41,4 +48,26 @@ Key Features
 - Email
   - Customable email sending module
   - Pre-made email templates
-  - Auto sender service switching on production(SendGrid) / development(Mailtrap)  
+  - Auto sender service switching on production(SendGrid) / development(Mailtrap)
+
+## Demonstration 🖥️
+Login, All tours and sigle tour page
+
+https://github.com/kobienkung/Natours/assets/59368603/ec1714d6-d9de-4c75-9540-98a6ce6abf0f
+
+Stripe payment
+
+https://github.com/kobienkung/Natours/assets/59368603/2996acf5-2cbe-4761-9f56-5baeaf56555c
+
+Name and photo update
+
+https://github.com/kobienkung/Natours/assets/59368603/0a2c0a88-3c98-4b40-a387-d3bdeb64f298
+
+Password update
+
+https://github.com/kobienkung/Natours/assets/59368603/2a62ae04-cdda-4319-8d6b-b557617c7fed
+
+Error handle examples
+
+https://github.com/kobienkung/Natours/assets/59368603/0f2f2439-2da5-4662-a0f6-48fd6ae4bb36
+
